@@ -5,6 +5,7 @@ class Tile
     @bomb = bomb
     @reveal = false
     @flag = false
+    @bomb_count = 0
   end
 
   def bomb?
@@ -17,6 +18,10 @@ class Tile
 
   def flag?
     @flag
+  end
+
+  def add_bomb
+    @bomb = true
   end
 
   def click
@@ -37,8 +42,10 @@ class Tile
   end
 
   def to_s
-    if revealed? && bomb_count > 0
-      bomb_count.to_s
+    if revealed? && bomb?
+      "X"
+    elsif revealed? && @bomb_count > 0
+      @bomb_count.to_s
     elsif revealed?
       "_"
     elsif flag?
