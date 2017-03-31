@@ -49,7 +49,7 @@ class Tile
     elsif revealed?
       "_"
     elsif flag?
-      "F'"
+      "F"
     else
       "*"
     end

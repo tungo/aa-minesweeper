@@ -1,5 +1,6 @@
 require_relative "tile.rb"
 
+
 class Board
   attr_reader :grid
 
@@ -31,13 +32,29 @@ class Board
   end
 
   def click_tile(pos)
-    if self[pos].bomb?
-      return game_over?
-    elsif self[pos].bomb_count == 0
-      adjacent_tiles(pos).each { |p| click_tile(p) }
-    end
-    
     self[pos].click
+    if self[pos].bomb?
+      return
+    elsif self[pos].bomb_count > 0
+      return
+    elsif self[pos].bomb_count == 0
+      adjacent_tiles(pos).each do |adj_pos|
+        click_tile(adj_pos) unless self[adj_pos].revealed?
+      end
+    end
+  end
+
+  def game_over?
+    @grid.flatten.any? { |tile| tile.bomb? && tile.revealed? }
+  end
+
+  def won?
+    not_bomb = @grid.flatten.reject { |tile| tile.bomb? }
+    not_bomb.all? { |tile| tile.revealed? }
+  end
+
+  def update_flag(pos)
+    self[pos].add_flag
   end
 
   def adjacent_tiles(pos)
@@ -48,6 +65,7 @@ class Board
         tile_arr << [ro,co] if valid_tile?([ro,co])
       end
     end
+    tile_arr.delete(pos)
     tile_arr
   end
 
@@ -66,13 +84,14 @@ class Board
   end
 
   def render
-    grid.each do |row|
-      puts row.map(&:to_s).join(' ')
+    puts "  #{(0..8).to_a.join(" ")}"
+    grid.each_with_index do |row, idx|
+      puts "#{idx} #{row.map(&:to_s).join(' ')}"
     end
   end
 
   def place_bomb
-    until @bomb_pos.length == 20
+    until @bomb_pos.length == 5
       row, col = rand(9), rand(9)
       unless @bomb_pos.include? [row,col]
         grid[row][col].add_bomb
@@ -86,9 +105,4 @@ class Board
     self.new(empty_grid)
   end
 
-end
-
-if __FILE__ == $PROGRAM_NAME
-  board = Board.default_board
-  board.render
 end
